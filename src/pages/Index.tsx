@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useTasks } from '@/hooks/useTasks';
+import { useAuth } from '@/hooks/useAuth';
 import { TaskColumn, TaskFilters, TaskForm } from '@/components/tasks';
 import { Task } from '@/types/task';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List, CheckSquare } from 'lucide-react';
+import { Plus, LayoutGrid, List, CheckSquare, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ViewMode = 'board' | 'list';
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const {
     tasks,
     tasksByStatus,
@@ -27,14 +29,14 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
 
-  const handleCreateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    createTask(taskData);
+  const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    await createTask(taskData);
     toast.success('Task created successfully');
   };
 
-  const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingTask) {
-      updateTask(editingTask.id, taskData);
+      await updateTask(editingTask.id, taskData);
       toast.success('Task updated successfully');
     }
   };
@@ -44,13 +46,13 @@ const Index = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteTask(id);
+  const handleDelete = async (id: string) => {
+    await deleteTask(id);
     toast.success('Task deleted');
   };
 
-  const handleStatusChange = (id: string, status: Task['status']) => {
-    updateTaskStatus(id, status);
+  const handleStatusChange = async (id: string, status: Task['status']) => {
+    await updateTaskStatus(id, status);
     toast.success(`Task moved to ${status.replace('-', ' ')}`);
   };
 
@@ -72,7 +74,7 @@ const Index = () => {
               <div>
                 <h1 className="text-xl font-bold text-foreground">TaskFlow</h1>
                 <p className="text-sm text-muted-foreground">
-                  {taskCounts.total} tasks · {taskCounts.completed} completed
+                  {user?.email} · {taskCounts.total} tasks · {taskCounts.completed} completed
                 </p>
               </div>
             </div>
@@ -101,6 +103,10 @@ const Index = () => {
               <Button onClick={openNewTaskForm}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Task
+              </Button>
+
+              <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
