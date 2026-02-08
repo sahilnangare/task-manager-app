@@ -5,6 +5,7 @@ import { TaskColumn, TaskFilters, TaskForm } from '@/components/tasks';
 import { Task } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { Plus, LayoutGrid, List, CheckSquare, LogOut } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { toast } from 'sonner';
 
 type ViewMode = 'board' | 'list';
@@ -104,6 +105,8 @@ const Index = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Task
               </Button>
+
+              <ThemeToggle />
 
               <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
                 <LogOut className="h-4 w-4" />
