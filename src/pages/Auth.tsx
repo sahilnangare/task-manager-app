@@ -9,8 +9,9 @@ import { CheckSquare, Mail, Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Auth = () => {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, resetPassword } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -33,7 +34,16 @@ const Auth = () => {
     setSubmitting(true);
 
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        const { error } = await resetPassword(email);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Password reset email sent! Check your inbox.');
+          setIsForgotPassword(false);
+          setIsLogin(true);
+        }
+      } else if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
           toast.error(error.message);
@@ -66,18 +76,24 @@ const Auth = () => {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">
-              {isLogin ? 'Welcome back' : 'Create an account'}
+              {isForgotPassword
+                ? 'Reset your password'
+                : isLogin
+                  ? 'Welcome back'
+                  : 'Create an account'}
             </CardTitle>
             <CardDescription>
-              {isLogin
-                ? 'Sign in to manage your tasks'
-                : 'Sign up to start organizing your work'}
+              {isForgotPassword
+                ? "Enter your email and we'll send you a reset link"
+                : isLogin
+                  ? 'Sign in to manage your tasks'
+                  : 'Sign up to start organizing your work'}
             </CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {!isLogin && (
+              {!isLogin && !isForgotPassword && (
                 <div className="space-y-2">
                   <Label htmlFor="displayName">Display Name</Label>
                   <div className="relative">
@@ -109,41 +125,66 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="pl-9"
-                  />
+              {!isForgotPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting
                   ? 'Please wait...'
-                  : isLogin
-                    ? 'Sign In'
-                    : 'Create Account'}
+                  : isForgotPassword
+                    ? 'Send Reset Link'
+                    : isLogin
+                      ? 'Sign In'
+                      : 'Create Account'}
               </Button>
 
+              {isLogin && !isForgotPassword && (
+                <button
+                  type="button"
+                  className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+                  onClick={() => setIsForgotPassword(true)}
+                >
+                  Forgot your password?
+                </button>
+              )}
+
               <p className="text-sm text-muted-foreground text-center">
-                {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+                {isForgotPassword
+                  ? 'Remember your password?'
+                  : isLogin
+                    ? "Don't have an account?"
+                    : 'Already have an account?'}{' '}
                 <button
                   type="button"
                   className="text-primary underline-offset-4 hover:underline font-medium"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    if (isForgotPassword) {
+                      setIsLogin(true);
+                    } else {
+                      setIsLogin(!isLogin);
+                    }
+                  }}
                 >
-                  {isLogin ? 'Sign up' : 'Sign in'}
+                  {isForgotPassword ? 'Sign in' : isLogin ? 'Sign up' : 'Sign in'}
                 </button>
               </p>
             </CardFooter>
