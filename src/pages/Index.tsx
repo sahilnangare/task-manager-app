@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { TaskColumn, TaskFilters, TaskForm } from '@/components/tasks';
 import { Task } from '@/types/task';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plus, LayoutGrid, List, CheckSquare, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { toast } from 'sonner';
@@ -11,7 +14,9 @@ import { toast } from 'sonner';
 type ViewMode = 'board' | 'list';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const {
     tasks,
     tasksByStatus,
@@ -107,6 +112,19 @@ const Index = () => {
               </Button>
 
               <ThemeToggle />
+
+              <button
+                onClick={() => navigate('/profile')}
+                className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                title="Profile"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" />
+                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                    {(profile?.display_name || user?.email || '?').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
 
               <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
                 <LogOut className="h-4 w-4" />
